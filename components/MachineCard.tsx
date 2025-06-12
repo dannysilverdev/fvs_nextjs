@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   Card, CardContent, Typography, IconButton, Tooltip, Stack, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions, useTheme, useMediaQuery
 } from '@mui/material'
 import { Edit, Delete } from '@mui/icons-material'
 import AddDeadlineDialog from './AddDeadlineDialog'
@@ -34,6 +34,10 @@ type Props = {
 export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDeadlineAdded }: Props) {
   const [openDialog, setOpenDialog] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [selectedDeadline, setSelectedDeadline] = useState<Deadline | null>(null)
+
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const getColor = (date: string, freq: number): string => {
     const last = new Date(date + 'T00:00')
@@ -49,22 +53,16 @@ export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDe
     return 'green'
   }
 
-  const getTooltipContent = (d: Deadline) => {
-    const last = new Date(d.date + 'T00:00')
-    const due = new Date(last)
-    due.setDate(due.getDate() + d.frequency_days)
+  const getDueDate = (date: string, freq: number): Date => {
+    const d = new Date(date + 'T00:00')
+    d.setDate(d.getDate() + freq)
+    return d
+  }
 
+  const getDaysRemaining = (due: Date): number => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const diff = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-
-    return `
-${d.deadline_types?.name?.toUpperCase() || 'VENCIMIENTO'}
-Última revisión: ${last.toLocaleDateString()}
-Frecuencia: ${d.frequency_days} días
-Vence: ${due.toLocaleDateString()}
-Restan: ${diff} días
-    `.trim()
+    return Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   }
 
   return (
@@ -76,21 +74,26 @@ Restan: ${diff} días
         <Typography variant="body2">Status: {machine.status}</Typography>
 
         <Stack direction="column" spacing={1} sx={{ mt: 2 }}>
-          {deadlines.map((d) => (
-            <Stack key={d.id} direction="row" alignItems="center" spacing={1}>
-              <Tooltip title={<pre>{getTooltipContent(d)}</pre>} arrow>
-                <span style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  backgroundColor: getColor(d.date, d.frequency_days),
-                  display: 'inline-block',
-                  cursor: 'pointer'
-                }} />
-              </Tooltip>
-              <Typography variant="body2">{d.deadline_types?.name || 'Desconocido'}</Typography>
-            </Stack>
-          ))}
+          {deadlines.map((d) => {
+            const due = getDueDate(d.date, d.frequency_days)
+            return (
+              <Stack key={d.id} direction="row" alignItems="center" spacing={1}>
+                <span
+                  onClick={() => setSelectedDeadline(d)}
+                  style={{
+                    width: isMobile ? 30 : 18,
+                    height: isMobile ? 30 : 18,
+                    borderRadius: '50%',
+                    backgroundColor: getColor(d.date, d.frequency_days),
+                    display: 'inline-block',
+                    cursor: 'pointer',
+                    marginRight: 4
+                  }}
+                />
+                <Typography variant="body2">{d.deadline_types?.name || 'Desconocido'}</Typography>
+              </Stack>
+            )
+          })}
         </Stack>
 
         <Tooltip title="Agregar vencimiento">
@@ -137,6 +140,24 @@ Restan: ${diff} días
               Eliminar
             </Button>
           </DialogActions>
+        </Dialog>
+
+        <Dialog open={!!selectedDeadline} onClose={() => setSelectedDeadline(null)}>
+          <DialogTitle>{selectedDeadline?.deadline_types?.name || 'Detalle'}</DialogTitle>
+          <DialogContent>
+            {selectedDeadline && (
+              <>
+                <Typography>Última revisión: {new Date(selectedDeadline.date).toLocaleDateString()}</Typography>
+                <Typography>Frecuencia: {selectedDeadline.frequency_days} días</Typography>
+                <Typography>
+                  Vence: {getDueDate(selectedDeadline.date, selectedDeadline.frequency_days).toLocaleDateString()}
+                </Typography>
+                <Typography>
+                  Restan: {getDaysRemaining(getDueDate(selectedDeadline.date, selectedDeadline.frequency_days))} días
+                </Typography>
+              </>
+            )}
+          </DialogContent>
         </Dialog>
       </CardContent>
     </Card>
