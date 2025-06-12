@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Box, Button, TextField, Typography } from '@mui/material'
+import { supabase } from '@/lib/supabase'
 
 type Machine = {
   id: string
@@ -30,18 +31,13 @@ export default function AddMachineForm({ onAdd }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const res = await fetch('/api/machines', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    })
+    const { data, error } = await supabase.from('machines').insert([form]).select().single()
 
-    if (res.ok) {
-      const newMachine = await res.json()
-      onAdd(newMachine)
+    if (error) {
+      console.error('Error creating machine', error.message)
+    } else if (data) {
+      onAdd(data)
       setForm({ name: '', type: '', model: '', status: '' })
-    } else {
-      console.error('Error creating machine')
     }
   }
 
