@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -8,82 +9,95 @@ import {
   Button,
   TextField
 } from '@mui/material'
-import { useState, useEffect } from 'react'
 
-interface Machine {
+type Machine = {
   id: string
   name: string
-  model: string
   type: string
+  model: string
   status: string
+  plate_number: string
+  brand: string
 }
 
-interface Props {
+type Props = {
   open: boolean
-  machine: Machine | null
+  machine: Machine
   onClose: () => void
-  onSave: (updated: Machine) => void
+  onSave: (machine: Machine) => void
 }
 
 export default function EditMachineDialog({ open, machine, onClose, onSave }: Props) {
-  const [form, setForm] = useState<Machine | null>(null)
+  const [form, setForm] = useState(machine)
 
   useEffect(() => {
     setForm(machine)
   }, [machine])
 
-  if (!form) return null
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value } as Machine)
+    setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSave = () => {
-    if (form) {
-      onSave(form)
-    }
+  const handleSubmit = () => {
+    onSave(form)
   }
 
   return (
-    <Dialog open={open} onClose={onClose} disableEnforceFocus>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Edit Machine</DialogTitle>
       <DialogContent>
         <TextField
-          margin="dense"
-          name="name"
           label="Name"
+          name="name"
           fullWidth
+          margin="normal"
           value={form.name}
           onChange={handleChange}
         />
         <TextField
-          margin="dense"
-          name="model"
-          label="Model"
-          fullWidth
-          value={form.model}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          name="type"
           label="Type"
+          name="type"
           fullWidth
+          margin="normal"
           value={form.type}
           onChange={handleChange}
         />
         <TextField
-          margin="dense"
-          name="status"
-          label="Status"
+          label="Model"
+          name="model"
           fullWidth
+          margin="normal"
+          value={form.model}
+          onChange={handleChange}
+        />
+        <TextField
+          label="Status"
+          name="status"
+          fullWidth
+          margin="normal"
           value={form.status}
+          onChange={handleChange}
+        />
+        <TextField
+          label="Plate Number"
+          name="plate_number"
+          fullWidth
+          margin="normal"
+          value={form.plate_number}
+          onChange={handleChange}
+        />
+        <TextField
+          label="Brand"
+          name="brand"
+          fullWidth
+          margin="normal"
+          value={form.brand}
           onChange={handleChange}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained">Save</Button>
+        <Button variant="contained" onClick={handleSubmit}>Save</Button>
       </DialogActions>
     </Dialog>
   )

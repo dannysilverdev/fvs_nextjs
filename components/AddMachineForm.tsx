@@ -10,6 +10,8 @@ type Machine = {
   type: string
   model: string
   status: string
+  plate_number: string
+  brand: string
 }
 
 type Props = {
@@ -21,7 +23,9 @@ export default function AddMachineForm({ onAdd }: Props) {
     name: '',
     type: '',
     model: '',
-    status: ''
+    status: '',
+    plate_number: '',
+    brand: ''
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +41,14 @@ export default function AddMachineForm({ onAdd }: Props) {
       console.error('Error creating machine', error.message)
     } else if (data) {
       onAdd(data)
-      setForm({ name: '', type: '', model: '', status: '' })
+      setForm({
+        name: '',
+        type: '',
+        model: '',
+        status: '',
+        plate_number: '',
+        brand: ''
+      })
     }
   }
 
@@ -49,6 +60,8 @@ export default function AddMachineForm({ onAdd }: Props) {
       <TextField label="Type" name="type" fullWidth margin="normal" required value={form.type} onChange={handleChange} />
       <TextField label="Model" name="model" fullWidth margin="normal" required value={form.model} onChange={handleChange} />
       <TextField label="Status" name="status" fullWidth margin="normal" required value={form.status} onChange={handleChange} />
+      <TextField label="Plate Number" name="plate_number" fullWidth margin="normal" required value={form.plate_number} onChange={handleChange} />
+      <TextField label="Brand" name="brand" fullWidth margin="normal" required value={form.brand} onChange={handleChange} />
 
       <Button type="submit" variant="contained" sx={{ mt: 2 }}>Add</Button>
     </Box>

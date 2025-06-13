@@ -16,6 +16,8 @@ type Machine = {
   type: string
   model: string
   status: string
+  plate_number: string
+  brand: string
 }
 
 type Deadline = {
@@ -37,7 +39,9 @@ export default function HomePage() {
 
   const fetchMachines = async () => {
     setLoading(true)
-    const { data, error } = await supabase.from('machines').select('*')
+    const { data, error } = await supabase
+      .from('machines')
+      .select('id, name, type, model, status, plate_number, brand')
     if (error) {
       setSnack({ message: 'Error loading machines', severity: 'error' })
     } else if (data) {
@@ -85,7 +89,9 @@ export default function HomePage() {
         name: updated.name,
         type: updated.type,
         model: updated.model,
-        status: updated.status
+        status: updated.status,
+        plate_number: updated.plate_number,
+        brand: updated.brand
       })
       .eq('id', updated.id)
 
