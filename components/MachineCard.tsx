@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import {
-  Card, CardContent, Typography, IconButton, Tooltip, Stack, Box,
-  Dialog, DialogTitle, DialogContent, DialogActions, Button,
-  useTheme, useMediaQuery
+  Card, CardContent, Typography, IconButton, Tooltip, Stack, Button,
+  Dialog, DialogTitle, DialogContent, DialogActions, useTheme, useMediaQuery, Box
 } from '@mui/material'
 import { Edit, Delete } from '@mui/icons-material'
 import AddDeadlineDialog from './AddDeadlineDialog'
@@ -69,27 +68,20 @@ export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDe
   }
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="baseline">
-          <Typography variant="h6" fontWeight="bold">
-            {machine.name}
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {machine.plate_number}
-          </Typography>
+    <Card sx={{ position: 'relative', minHeight: 260 }}>
+      <CardContent>
+        {/* Título y patente */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Typography variant="h6" fontWeight="bold">{machine.name}</Typography>
+          <Typography variant="caption" sx={{ mt: 0.5 }}>{machine.plate_number}</Typography>
         </Box>
 
-        <Typography variant="subtitle2" sx={{ mt: 0.5 }}>
-          {machine.type}
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 0.5 }}>
-          {machine.brand} {machine.model}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Status: {machine.status}
-        </Typography>
+        {/* Info de la máquina */}
+        <Typography variant="body2">{machine.type}</Typography>
+        <Typography variant="body2">{machine.brand} - {machine.model}</Typography>
+        <Typography variant="body2">Status: {machine.status}</Typography>
 
+        {/* Semáforos en columna */}
         <Stack direction="column" spacing={1} sx={{ mt: 2 }}>
           {deadlines.map((d) => {
             const due = getDueDate(d.date, d.frequency_days)
@@ -98,8 +90,8 @@ export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDe
                 <span
                   onClick={() => setSelectedDeadline(d)}
                   style={{
-                    width: isMobile ? 30 : 20,
-                    height: isMobile ? 30 : 20,
+                    width: isMobile ? 30 : 18,
+                    height: isMobile ? 30 : 18,
                     borderRadius: '50%',
                     backgroundColor: getColor(d.date, d.frequency_days),
                     display: 'inline-block',
@@ -111,30 +103,38 @@ export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDe
               </Stack>
             )
           })}
+
+          {/* Botón + como "semáforo" nuevo */}
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <span
+              onClick={() => setOpenDialog(true)}
+              style={{
+                width: isMobile ? 30 : 18,
+                height: isMobile ? 30 : 18,
+                borderRadius: '50%',
+                backgroundColor: '#ccc',
+                display: 'inline-flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                fontWeight: 'bold',
+                fontSize: isMobile ? 20 : 14,
+                cursor: 'pointer'
+              }}
+            >
+              ＋
+            </span>
+            <Typography variant="body2">Add Deadline</Typography>
+          </Stack>
         </Stack>
       </CardContent>
 
-      {/* Zona de controles inferiores */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" px={2} pb={2}>
-        <Tooltip title="Add deadline">
-          <IconButton onClick={() => setOpenDialog(true)} size="small">
-            <span style={{
-              fontSize: '1.2rem',
-              fontWeight: 'bold',
-              display: 'inline-block',
-              lineHeight: '1',
-              transform: 'scale(1.3)'
-            }}>＋</span>
-          </IconButton>
-        </Tooltip>
-
-        <Box>
-          <IconButton onClick={() => onEdit(machine)}><Edit /></IconButton>
-          <IconButton onClick={() => setConfirmOpen(true)}><Delete /></IconButton>
-        </Box>
+      {/* Acciones arrinconadas abajo a la derecha */}
+      <Box sx={{ position: 'absolute', bottom: 8, right: 8 }}>
+        <IconButton onClick={() => onEdit(machine)}><Edit /></IconButton>
+        <IconButton onClick={() => setConfirmOpen(true)}><Delete /></IconButton>
       </Box>
 
-      {/* Dialogos */}
+      {/* Dialogs */}
       <AddDeadlineDialog
         open={openDialog}
         machineId={machine.id}
