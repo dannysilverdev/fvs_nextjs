@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import {
-  Card, CardContent, Typography, IconButton, Tooltip, Stack, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions, useTheme, useMediaQuery, Box
+  Card, CardContent, Typography, IconButton, Tooltip, Stack, Box,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button,
+  useTheme, useMediaQuery
 } from '@mui/material'
 import { Edit, Delete } from '@mui/icons-material'
 import AddDeadlineDialog from './AddDeadlineDialog'
@@ -68,22 +69,26 @@ export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDe
   }
 
   return (
-    <Card sx={{ position: 'relative' }}>
-      {/* Botones en la esquina superior derecha */}
-      <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}>
-        <IconButton onClick={() => onEdit(machine)} size="small"><Edit /></IconButton>
-        <IconButton onClick={() => setConfirmOpen(true)} size="small"><Delete /></IconButton>
-      </Box>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="baseline">
+          <Typography variant="h6" fontWeight="bold">
+            {machine.name}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {machine.plate_number}
+          </Typography>
+        </Box>
 
-      <CardContent>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
-          {machine.name}
+        <Typography variant="subtitle2" sx={{ mt: 0.5 }}>
+          {machine.type}
         </Typography>
-        <Typography variant="body2">Patente: {machine.plate_number}</Typography>
-        <Typography variant="body2">Tipo: {machine.type}</Typography>
-        <Typography variant="body2">Marca: {machine.brand}</Typography>
-        <Typography variant="body2">Modelo: {machine.model}</Typography>
-        <Typography variant="body2">Status: {machine.status}</Typography>
+        <Typography variant="body2" sx={{ mt: 0.5 }}>
+          {machine.brand} {machine.model}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Status: {machine.status}
+        </Typography>
 
         <Stack direction="column" spacing={1} sx={{ mt: 2 }}>
           {deadlines.map((d) => {
@@ -93,8 +98,8 @@ export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDe
                 <span
                   onClick={() => setSelectedDeadline(d)}
                   style={{
-                    width: isMobile ? 30 : 18,
-                    height: isMobile ? 30 : 18,
+                    width: isMobile ? 30 : 20,
+                    height: isMobile ? 30 : 20,
                     borderRadius: '50%',
                     backgroundColor: getColor(d.date, d.frequency_days),
                     display: 'inline-block',
@@ -102,14 +107,17 @@ export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDe
                     marginRight: 4
                   }}
                 />
-                <Typography variant="body2">{d.deadline_types?.name || 'Desconocido'}</Typography>
+                <Typography variant="body2">{d.deadline_types?.name || 'Unknown'}</Typography>
               </Stack>
             )
           })}
         </Stack>
+      </CardContent>
 
-        <Tooltip title="Agregar vencimiento">
-          <IconButton onClick={() => setOpenDialog(true)} size="small" sx={{ mt: 2 }}>
+      {/* Zona de controles inferiores */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" px={2} pb={2}>
+        <Tooltip title="Add deadline">
+          <IconButton onClick={() => setOpenDialog(true)} size="small">
             <span style={{
               fontSize: '1.2rem',
               fontWeight: 'bold',
@@ -120,53 +128,59 @@ export default function MachineCard({ machine, deadlines, onEdit, onDelete, onDe
           </IconButton>
         </Tooltip>
 
-        <AddDeadlineDialog
-          open={openDialog}
-          machineId={machine.id}
-          onClose={() => setOpenDialog(false)}
-          onAdded={onDeadlineAdded}
-        />
+        <Box>
+          <IconButton onClick={() => onEdit(machine)}><Edit /></IconButton>
+          <IconButton onClick={() => setConfirmOpen(true)}><Delete /></IconButton>
+        </Box>
+      </Box>
 
-        <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-          <DialogTitle>Delete machine?</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete this machine? This action cannot be undone.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-            <Button
-              onClick={() => {
-                onDelete(machine.id)
-                setConfirmOpen(false)
-              }}
-              color="error"
-              variant="contained"
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
+      {/* Dialogos */}
+      <AddDeadlineDialog
+        open={openDialog}
+        machineId={machine.id}
+        onClose={() => setOpenDialog(false)}
+        onAdded={onDeadlineAdded}
+      />
 
-        <Dialog open={!!selectedDeadline} onClose={() => setSelectedDeadline(null)}>
-          <DialogTitle>{selectedDeadline?.deadline_types?.name || 'Detail'}</DialogTitle>
-          <DialogContent>
-            {selectedDeadline && (
-              <>
-                <Typography>Last maintenance: {new Date(selectedDeadline.date).toLocaleDateString()}</Typography>
-                <Typography>Frequency: {selectedDeadline.frequency_days} days</Typography>
-                <Typography>
-                  Due: {getDueDate(selectedDeadline.date, selectedDeadline.frequency_days).toLocaleDateString()}
-                </Typography>
-                <Typography>
-                  Remaining: {getDaysRemaining(getDueDate(selectedDeadline.date, selectedDeadline.frequency_days))} days
-                </Typography>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
-      </CardContent>
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Delete machine?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this machine? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => {
+              onDelete(machine.id)
+              setConfirmOpen(false)
+            }}
+            color="error"
+            variant="contained"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!selectedDeadline} onClose={() => setSelectedDeadline(null)}>
+        <DialogTitle>{selectedDeadline?.deadline_types?.name || 'Detail'}</DialogTitle>
+        <DialogContent>
+          {selectedDeadline && (
+            <>
+              <Typography>Last maintenance: {new Date(selectedDeadline.date).toLocaleDateString()}</Typography>
+              <Typography>Frequency: {selectedDeadline.frequency_days} days</Typography>
+              <Typography>
+                Due: {getDueDate(selectedDeadline.date, selectedDeadline.frequency_days).toLocaleDateString()}
+              </Typography>
+              <Typography>
+                Remaining: {getDaysRemaining(getDueDate(selectedDeadline.date, selectedDeadline.frequency_days))} days
+              </Typography>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

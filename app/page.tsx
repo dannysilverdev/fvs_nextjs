@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import {
-  Container, Typography, Paper, Grid, Button,
-  Dialog, DialogTitle, DialogContent, Snackbar, Alert
+  Container, Typography, Grid, Dialog, DialogTitle, DialogContent,
+  Snackbar, Alert, IconButton, Box
 } from '@mui/material'
+import { Add } from '@mui/icons-material'
 import { supabase } from '@/lib/supabase'
 import AddMachineForm from '@/components/AddMachineForm'
 import MachineCard from '@/components/MachineCard'
@@ -116,7 +117,24 @@ export default function HomePage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>Fleet Vitals System</Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4">Fleet Vitals System</Typography>
+        <IconButton
+          onClick={() => setOpenForm(true)}
+          sx={{
+            backgroundColor: 'primary.main',
+            color: 'white',
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            '&:hover': {
+              backgroundColor: 'primary.dark',
+            },
+          }}
+        >
+          <Add sx={{ fontSize: 32 }} />
+        </IconButton>
+      </Box>
 
       <Typography variant="h6" gutterBottom>Machines Overview</Typography>
 
@@ -143,8 +161,6 @@ export default function HomePage() {
           })}
         </Grid>
       )}
-
-      <Button variant="contained" onClick={() => setOpenForm(true)}>Add Machine</Button>
 
       <Dialog open={openForm} onClose={() => setOpenForm(false)} fullWidth maxWidth="sm">
         <DialogTitle>Add New Machine</DialogTitle>
